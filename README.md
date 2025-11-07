@@ -23,4 +23,4 @@ The system helps content creators gain insights into audience feedback and optim
 | Visualization | ECharts |
 | Frontend | HTML, CSS, JavaScript |
 
-** Contact me if you got any question with the project **
+**Contact me if you got any question with the project**
