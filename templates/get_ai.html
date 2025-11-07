@@ -1,0 +1,141 @@
+{% extends 'base.html' %}
+{% block content %}
+    <div class="container mt-4">
+        <h2 class="mb-4">短视频数据分析与优化建议</h2>
+
+        <div class="card mb-4">
+            <div class="card-body">
+                <form id="videoAnalysisForm">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="fans" class="form-label">粉丝数量</label>
+                                <input type="number" class="form-control" id="fans" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="publish_date" class="form-label">发表时间 (格式: YYYY.MM.DD)</label>
+                                <input type="text" class="form-control" id="publish_date" placeholder="2024.07.22"
+                                       required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="duration" class="form-label">视频时长 (格式: MM:SS)</label>
+                                <input type="text" class="form-control" id="duration" placeholder="02:30" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="likes" class="form-label">点赞数量</label>
+                                <input type="number" class="form-control" id="likes" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="favorites" class="form-label">收藏数量</label>
+                                <input type="number" class="form-control" id="favorites" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="comments" class="form-label">评论数量</label>
+                                <input type="number" class="form-control" id="comments" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="shares" class="form-label">分享数量</label>
+                                <input type="number" class="form-control" id="shares" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="description" class="form-label">视频描述</label>
+                        <textarea class="form-control" id="description" rows="3" required></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="analysis_focus" class="form-label">分析重点 (可选)</label>
+                        <input type="text" class="form-control" id="analysis_focus" placeholder="例如: 如何提高评论数量">
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">获取分析结果</button>
+                </form>
+            </div>
+        </div>
+
+        <div id="resultContainer" class="card" style="display: none;">
+            <div class="card-body">
+                <h4 class="card-title">分析结果</h4>
+                <div class="mb-3">
+                    <h5>关键指标</h5>
+                    <p id="metricsInfo"></p>
+                </div>
+                <div>
+                    <h5>详细分析</h5>
+                    <div id="analysisResult" class="p-3 bg-light rounded"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('videoAnalysisForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            // 显示加载状态
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> 分析中...';
+
+            // 获取表单数据
+            const formData = {
+                fans: document.getElementById('fans').value,
+                publish_date: document.getElementById('publish_date').value,
+                description: document.getElementById('description').value,
+                duration: document.getElementById('duration').value,
+                likes: document.getElementById('likes').value,
+                favorites: document.getElementById('favorites').value,
+                comments: document.getElementById('comments').value,
+                shares: document.getElementById('shares').value,
+                analysis_focus: document.getElementById('analysis_focus').value
+            };
+
+            // 发送请求
+            fetch('/home/get_ai/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify(formData)
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        alert('分析失败: ' + data.error);
+                        return;
+                    }
+
+                    // 显示结果
+                    document.getElementById('metricsInfo').innerHTML = `
+            点赞率: ${data.metrics.like_rate.toFixed(2)}% |
+            互动率: ${data.metrics.interaction_rate.toFixed(2)}% |
+            视频时长: ${data.metrics.duration}秒 |
+            已发布: ${data.metrics.days_since_publish}天
+        `;
+
+                    // 格式化分析结果
+                    const formattedAnalysis = data.analysis.replace(/\n/g, '<br>');
+                    document.getElementById('analysisResult').innerHTML = formattedAnalysis;
+                    document.getElementById('resultContainer').style.display = 'block';
+                })
+                .catch(error => {
+                    alert('请求失败: ' + error);
+                })
+                .finally(() => {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '获取分析结果';
+                });
+        });
+    </script>
+
+    <style>
+        #analysisResult {
+            white-space: pre-line;
+        }
+    </style>
+{% endblock %}

@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+{% block content %}
+    <div class="page-content">
+        <h1 class="page-title">
+            <i class="fa fa-home"></i>
+            个人信息管理
+        </h1>
+
+        <section class="py-4">
+            <div class="container-fluid">
+                <div class="row justify-content-center">
+                    <div class="col-lg-8">
+                        <div class="card info-card mb-4">
+                            <div class="card-header">
+                                <h5 class="card-title mb-1">
+                                    <i class="fas fa-edit mr-2"></i>信息修改
+                                </h5>
+                                <p class="card-subtitle">修改个人信息</p>
+                            </div>
+                            <div class="card-body">
+                                <form class="form-horizontal" action="/home/changeInfo/" method="POST">
+                                    <input type="hidden" class="form-control" name="user_id" value="{{ userInfo.id }}"
+                                           placeholder="id">
+                                    <div class="form-group row mb-4">
+                                        <label for="" class="col-sm-3 col-form-label form-label">
+                                            <i class="fas fa-user"></i> 用户名
+                                        </label>
+                                        <div class="col-sm-9">
+                                            <input type="text" class="form-control" value="{{ userInfo.username }}"
+                                                   placeholder="用户名" disabled>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group row mb-4">
+                                        <label for="" class="col-sm-3 col-form-label form-label">
+                                            <i class="fas fa-lock"></i> 原始密码
+                                        </label>
+                                        <div class="col-sm-9">
+                                            <input type="password" name="oldPwd" class="form-control"
+                                                   placeholder="请输入原始密码" required>
+                                        </div>
+                                    </div>
+
+
+                                    <div class="form-group row mb-4">
+                                        <label for="" class="col-sm-3 col-form-label form-label">
+                                            <i class="fas fa-key"></i> 新密码
+                                        </label>
+                                        <div class="col-sm-9">
+                                            <input type="password" name="newPwd" class="form-control"
+                                                   placeholder="请输入新密码" required>
+                                        </div>
+                                        <small class="form-text text-muted">
+                                            密码长度至少8位
+                                        </small>
+                                    </div>
+
+                                    <div class="form-group row mb-4">
+                                        <label for="" class="col-sm-3 col-form-label form-label">
+                                            <i class="fas fa-check-circle"></i> 确认密码
+                                        </label>
+                                        <div class="col-sm-9">
+                                            <input type="password" name="chkPwd" class="form-control"
+                                                   placeholder="再次输入新密码" required>
+                                        </div>
+                                    </div>
+
+
+                                    <div class="form-group row">
+                                        <div class="col-sm-9 offset-sm-3">
+                                            <button type="submit" class="btn btn-primary">
+                                                <i class="fa fa-save mr-2"></i>保存修改
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+
+{% endblock %}

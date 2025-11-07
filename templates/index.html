@@ -1,0 +1,788 @@
+{% extends 'base.html' %}
+{% block content %}
+    {% load static %}
+    <style>
+        /* 页面标题样式 */
+        .page-title {
+            font-size: 1.75rem;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .page-title i {
+            margin-right: 12px;
+            color: #6366f1;
+        }
+
+        /* 统计卡片样式 */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            border-left: 4px solid;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-card.primary {
+            border-left-color: #6366f1;
+        }
+
+        .stat-card.secondary {
+            border-left-color: #10b981;
+        }
+
+        .stat-card.danger {
+            border-left-color: #ef4444;
+        }
+
+        .stat-card.warning {
+            border-left-color: #f59e0b;
+        }
+
+        .stat-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1rem;
+            font-size: 1.25rem;
+            color: white;
+        }
+
+        .stat-card.primary .stat-icon {
+            background: linear-gradient(135deg, #6366f1 0%, #818cf8 100%);
+        }
+
+        .stat-card.secondary .stat-icon {
+            background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+        }
+
+        .stat-card.danger .stat-icon {
+            background: linear-gradient(135deg, #ef4444 0%, #f87171 100%);
+        }
+
+        .stat-card.warning .stat-icon {
+            background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);
+        }
+
+        .stat-title {
+            font-size: 0.875rem;
+            color: #64748b;
+            font-weight: 500;
+        }
+
+        .stat-value {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin: 0.5rem 0;
+        }
+
+        .stat-progress {
+            height: 6px;
+            background: #e2e8f0;
+            border-radius: 3px;
+            overflow: hidden;
+            margin-top: 0.75rem;
+        }
+
+        .stat-progress-bar {
+            height: 100%;
+            border-radius: 3px;
+        }
+
+        .stat-card.primary .stat-progress-bar {
+            background: linear-gradient(90deg, #6366f1 0%, #818cf8 100%);
+        }
+
+        .stat-card.secondary .stat-progress-bar {
+            background: linear-gradient(90deg, #10b981 0%, #34d399 100%);
+        }
+
+        .stat-card.danger .stat-progress-bar {
+            background: linear-gradient(90deg, #ef4444 0%, #f87171 100%);
+        }
+
+        .stat-card.warning .stat-progress-bar {
+            background: linear-gradient(90deg, #f59e0b 0%, #fbbf24 100%);
+        }
+
+        /* 图表区域样式 */
+        .chart-container {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
+
+        .chart-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .chart-title i {
+            margin-right: 10px;
+            color: #6366f1;
+        }
+
+        /* 表格区域样式 */
+        .table-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            margin-bottom: 2rem;
+        }
+
+        .table-header {
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .table-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #1e293b;
+            margin: 0;
+        }
+
+        .table-responsive {
+            overflow-x: auto;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+        .table thead th {
+            background-color: #f1f5f9;
+            color: #334155;
+            font-weight: 600;
+            padding: 0.75rem 1.25rem;
+            border: none;
+            white-space: nowrap;
+        }
+
+        .table tbody td {
+            padding: 0.75rem 1.25rem;
+            border-top: 1px solid #e2e8f0;
+            vertical-align: middle;
+        }
+
+        .table tbody tr:hover {
+            background-color: #f8fafc;
+        }
+
+        .table tbody tr:first-child td {
+            border-top: none;
+        }
+
+        .table-striped tbody tr:nth-of-type(odd) {
+            background-color: #f8fafc;
+        }
+
+        /* 分页样式 */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            margin: 2rem 0;
+        }
+
+        .page-item {
+            margin: 0 4px;
+        }
+
+        .page-link {
+            color: #64748b;
+            border: 1px solid #e2e8f0;
+            padding: 0.5rem 0.75rem;
+            border-radius: 8px;
+            transition: all 0.3s;
+            font-weight: 500;
+            min-width: 40px;
+            text-align: center;
+        }
+
+        .page-link:hover {
+            color: #6366f1;
+            background-color: #f1f5f9;
+            border-color: #e2e8f0;
+        }
+
+        .page-item.active .page-link {
+            background-color: #6366f1;
+            border-color: #6366f1;
+            color: white;
+        }
+
+        .page-item.disabled .page-link {
+            color: #94a3b8;
+            background-color: #f8fafc;
+            border-color: #e2e8f0;
+        }
+
+        .pagination-info {
+            text-align: center;
+            color: #64748b;
+            font-size: 0.875rem;
+            margin-top: 0.5rem;
+        }
+
+        /* 链接样式 */
+        a {
+            color: #6366f1;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+
+        a:hover {
+            color: #4f46e5;
+            text-decoration: underline;
+        }
+
+        /* 响应式调整 */
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .page-title {
+                font-size: 1.5rem;
+            }
+
+            .table-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+    </style>
+    <div class="page-content">
+        <h1 class="page-title">
+            <i class="fa fa-home"></i>
+            抖音数据分析平台
+        </h1>
+        <div class="stats-grid">
+            <div class="stat-card primary">
+                <div class="stat-header">
+                    <div class="stat-icon">
+                        <i class="fa fa-database"></i>
+                    </div>
+                    <div>
+                        <div class="stat-title">最大数据量</div>
+                        <div class="stat-value">{{ maxData }}</div>
+                    </div>
+                </div>
+                <div class="stat-progress">
+                    <div class="stat-progress-bar" style="width: 30%"></div>
+                </div>
+            </div>
+            <div class="stat-card secondary">
+                <div class="stat-header">
+                    <div class="stat-icon">
+                        <i class="fa fa-thumbs-up"></i>
+                    </div>
+                    <div>
+                        <div class="stat-title">最大点赞量</div>
+                        <div class="stat-value">{{ maxLike }}</div>
+                    </div>
+                </div>
+                <div class="stat-progress">
+                    <div class="stat-progress-bar" style="width: 70%"></div>
+                </div>
+            </div>
+            <div class="stat-card danger">
+                <div class="stat-header">
+                    <div class="stat-icon">
+                        <i class="fa fa-comments"></i>
+                    </div>
+                    <div>
+                        <div class="stat-title">最大评论量</div>
+                        <div class="stat-value">{{ maxComment }}</div>
+                    </div>
+                </div>
+                <div class="stat-progress">
+                    <div class="stat-progress-bar" style="width: 55%"></div>
+                </div>
+            </div>
+            <div class="stat-card warning">
+                <div class="stat-header">
+                    <div class="stat-icon">
+                        <i class="fa fa-star"></i>
+                    </div>
+                    <div>
+                        <div class="stat-title">最大收藏量</div>
+                        <div class="stat-value">{{ maxCollect }}</div>
+                    </div>
+                </div>
+                <div class="stat-progress">
+                    <div class="stat-progress-bar" style="width: 35%"></div>
+                </div>
+            </div>
+        </div>
+        {#图标区域#}
+        <div class="chart-container">
+            <h3 class="chart-title">
+                <i class="fa fa-bar-chart"></i>
+                视频信息排行
+            </h3>
+            <div id="main" style="width: 100%;height: 450px;"></div>
+        </div>
+        {#表格区域#}
+        <div class="table-container">
+            <div class="table-header">
+                <h3 class="table-title">视频数据表格</h3>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>用户名</th>
+                        <th>粉丝数量</th>
+                        <th>视频描述</th>
+                        <th>发表时间</th>
+                        <th>视频时长</th>
+                        <th>点赞数量</th>
+                        <th>收藏数量</th>
+                        <th>评论数量</th>
+                        <th>分享数量</th>
+                        <th>下载数量</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for item in page_obj %}
+                        <tr>
+                            <td>
+                                {{ forloop.counter }}
+                            </td>
+                            <td>{{ item.username }}</td>
+                            <td>{{ item.fansCount }}</td>
+                            <td>{{ item.description }}</td>
+                            <td>{{ item.publishTime }}</td>
+                            <td>{{ item.duration }}</td>
+                            <td>{{ item.likeCount }}</td>
+                            <td>{{ item.collectCount }}</td>
+                            <td>{{ item.commentCount }}</td>
+                            <td>{{ item.shareCount }}</td>
+                            <td>{{ item.downloadCount }}</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+                <!-- 分页导航 -->
+                <nav aria-label="Page navigation">
+                    <ul class="pagination">
+                        {% if page_obj.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page=1" aria-label="First">
+                                    <i class="fa fa-angle-double-left"></i>
+                                </a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.previous_page_number }}"
+                                   aria-label="Previous">
+                                    <i class="fa fa-angle-left"></i>
+                                </a>
+                            </li>
+                        {% else %}
+                            <li class="page-item disabled">
+                                <span class="page-link">
+                                    <i class="fa fa-angle-double-left"></i>
+                                </span>
+                            </li>
+                            <li class="page-item disabled">
+                                <span class="page-link">
+                                    <i class="fa fa-angle-left"></i>
+                                </span>
+                            </li>
+                        {% endif %}
+
+                        {% for num in page_obj.paginator.page_range %}
+                            {% if page_obj.number == num %}
+                                <li class="page-item active">
+                                    <span class="page-link">{{ num }}</span>
+                                </li>
+                            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                                </li>
+                            {% endif %}
+                        {% endfor %}
+
+                        {% if page_obj.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.next_page_number }}" aria-label="Next">
+                                    <i class="fa fa-angle-right"></i>
+                                </a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}" aria-label="Last">
+                                    <i class="fa fa-angle-double-right"></i>
+                                </a>
+                            </li>
+                        {% else %}
+                            <li class="page-item disabled">
+                                <span class="page-link">
+                                    <i class="fa fa-angle-right"></i>
+                                </span>
+                            </li>
+                            <li class="page-item disabled">
+                                <span class="page-link">
+                                    <i class="fa fa-angle-double-right"></i>
+                                </span>
+                            </li>
+                        {% endif %}
+                    </ul>
+                    <div class="pagination-info">
+                        显示 {{ page_obj.start_index }} 到 {{ page_obj.end_index }} 条，共 {{ page_obj.paginator.count }} 条记录
+                    </div>
+                </nav>
+            </div>
+        </div>
+    </div>
+
+    <script src="{% static 'js/echarts.js' %}"></script>
+    <script>
+        var chartDom = document.getElementById('main');
+        var myChart = echarts.init(chartDom);
+        var option;
+
+        var category = [];
+        var dottedBase = +new Date();
+        var lineData = [];
+        var barData = [];
+
+        for (var i = 0; i < 20; i++) {
+            var date = new Date(dottedBase += 1000 * 3600 * 24);
+            category.push([
+                date.getFullYear(),
+                date.getMonth() + 1,
+                date.getDate()
+            ].join('-'));
+            var b = Math.random() * 200;
+            var d = Math.random() * 200;
+            barData.push(b)
+            lineData.push(d + b);
+        }
+
+        // 图表配置
+        option = {
+            tooltip: {
+                trigger: 'axis',
+                axisPointer: {
+                    type: 'shadow',
+                    label: {
+                        show: true,
+                        backgroundColor: '#333'
+                    }
+                }
+            },
+            legend: {
+                data: ['点赞', '比率', '评论'],
+                textStyle: {
+                    color: '#64748b'
+                },
+                itemGap: 20,
+                itemWidth: 14,
+                itemHeight: 14,
+                right: 20,
+                top: 0
+            },
+            grid: {
+                left: '3%',
+                right: '4%',
+                bottom: '3%',
+                containLabel: true
+            },
+            dataZoom: {
+                type: 'inside',
+                start: 0,
+                end: 90
+            },
+            xAxis: {
+                data: {{ xData | safe }},
+                axisLine: {
+                    lineStyle: {
+                        color: '#cbd5e1'
+                    }
+                },
+                axisLabel: {
+                    color: '#64748b'
+                },
+                show: false,
+            },
+            yAxis: [
+                {
+                    type: 'value',
+                    name: '赞评数量',
+                    splitLine: {
+                        lineStyle: {
+                            color: '#e2e8f0'
+                        }
+                    },
+                    axisLine: {
+                        show: true,
+                        lineStyle: {
+                            color: '#cbd5e1'
+                        }
+                    },
+                    axisLabel: {
+                        color: '#64748b'
+                    }
+                },
+                {
+                    type: 'value',
+                    name: '比率',
+                    splitLine: {
+                        show: false
+                    },
+                    axisLine: {
+                        show: true,
+                        lineStyle: {
+                            color: '#cbd5e1'
+                        }
+                    },
+                    axisLabel: {
+                        color: '#64748b'
+                    }
+                }
+            ],
+            series: [{
+                name: '比率',
+                type: 'line',
+                smooth: true,
+                showAllSymbol: true,
+                symbol: 'circle',
+                symbolSize: 8,
+                yAxisIndex: 1,
+                itemStyle: {
+                    color: '#10b981',
+                    borderColor: '#fff',
+                    borderWidth: 2
+                },
+                lineStyle: {
+                    color: '#10b981',
+                    width: 3
+                },
+                data: {{ xData3 }}
+            }, {
+                name: '评论',
+                type: 'bar',
+                barWidth: 30,
+                itemStyle: {
+                    color: new echarts.graphic.LinearGradient(
+                        0, 0, 0, 1,
+                        [
+                            {offset: 0, color: '#6366f1'},
+                            {offset: 1, color: '#818cf8'}
+                        ]
+                    ),
+                    borderRadius: [6, 6, 0, 0]
+                },
+                emphasis: {
+                    itemStyle: {
+                        color: new echarts.graphic.LinearGradient(
+                            0, 0, 0, 1,
+                            [
+                                {offset: 0, color: '#4f46e5'},
+                                {offset: 1, color: '#6366f1'}
+                            ]
+                        )
+                    }
+                },
+                data: {{ xData2 }}
+            }, {
+                name: '点赞',
+                type: 'pictorialBar',
+                symbol: 'rect',
+                itemStyle: {
+                    color: '#f59e0b'
+                },
+                symbolRepeat: true,
+                symbolSize: [30, 4],
+                symbolMargin: 1,
+                z: -10,
+                data: {{ xData1 }}
+            }]
+        };
+
+        option && myChart.setOption(option);
+
+        function changeData(x) {
+            var st = x[0]
+            for (var i = 0; i < x.length - 1; i++) {
+                x[i] = x[i + 1]
+            }
+            x[x.length - 1] = st
+        }
+
+        listX = {{ xData | safe }}
+            listY1 = {{ xData1 }}
+                listY2 = {{ xData2 }}
+                    listY3 = {{ xData3 }}
+
+                        function circleOne() {
+                            var chartDom = document.getElementById('main');
+                            var myChart = echarts.init(chartDom);
+                            var option;
+
+                            changeData(listX)
+                            changeData(listY1)
+                            changeData(listY2)
+                            changeData(listY3)
+
+                            option = {
+                                tooltip: {
+                                    trigger: 'axis',
+                                    axisPointer: {
+                                        type: 'shadow',
+                                        label: {
+                                            show: true,
+                                            backgroundColor: '#333'
+                                        }
+                                    }
+                                },
+                                legend: {
+                                    data: ['点赞', '比率', '评论'],
+                                    textStyle: {
+                                        color: '#64748b'
+                                    }
+                                },
+                                grid: {
+                                    left: '3%',
+                                    right: '4%',
+                                    bottom: '3%',
+                                    containLabel: true
+                                },
+                                dataZoom: {
+                                    type: 'inside',
+                                    start: 0,
+                                    end: 90
+                                },
+                                xAxis: {
+                                    data: listX,
+                                    axisLine: {
+                                        lineStyle: {
+                                            color: '#cbd5e1'
+                                        }
+                                    },
+                                    show: false,
+                                },
+                                yAxis: [
+                                    {
+                                        splitLine: {
+                                            lineStyle: {
+                                                color: '#e2e8f0'
+                                            }
+                                        },
+                                        axisLine: {
+                                            lineStyle: {
+                                                color: '#cbd5e1'
+                                            }
+                                        },
+                                        name: '赞评数量'
+                                    },
+                                    {
+                                        splitLine: {show: false},
+                                        axisLine: {
+                                            lineStyle: {
+                                                color: '#cbd5e1'
+                                            }
+                                        },
+                                        name: '比率'
+                                    },
+                                ],
+                                series: [{
+                                    name: '比率',
+                                    type: 'line',
+                                    smooth: true,
+                                    showAllSymbol: true,
+                                    symbol: 'circle',
+                                    symbolSize: 8,
+                                    yAxisIndex: 1,
+                                    itemStyle: {
+                                        color: '#10b981',
+                                        borderColor: '#fff',
+                                        borderWidth: 2
+                                    },
+                                    lineStyle: {
+                                        color: '#10b981',
+                                        width: 3
+                                    },
+                                    data: listY3
+                                }, {
+                                    name: '评论',
+                                    type: 'bar',
+                                    barWidth: 30,
+                                    itemStyle: {
+                                        color: new echarts.graphic.LinearGradient(
+                                            0, 0, 0, 1,
+                                            [
+                                                {offset: 0, color: '#6366f1'},
+                                                {offset: 1, color: '#818cf8'}
+                                            ]
+                                        ),
+                                        borderRadius: [6, 6, 0, 0]
+                                    },
+                                    data: listY2
+                                }, {
+                                    name: '点赞',
+                                    type: 'pictorialBar',
+                                    symbol: 'rect',
+                                    itemStyle: {
+                                        color: '#f59e0b'
+                                    },
+                                    symbolRepeat: true,
+                                    symbolSize: [30, 4],
+                                    symbolMargin: 1,
+                                    z: -10,
+                                    data: listY1
+                                }]
+                            };
+                            option && myChart.setOption(option);
+                        }
+
+        setInterval(circleOne, 2000);
+
+        // 窗口大小变化时重新调整图表大小
+        window.addEventListener('resize', function () {
+            myChart.resize();
+        });
+    </script>
+
+
+{% endblock %}

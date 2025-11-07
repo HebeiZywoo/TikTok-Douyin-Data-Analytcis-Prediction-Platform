@@ -1,0 +1,185 @@
+{% extends 'base.html' %}
+{% block content %}
+    <style>
+        .bg-gradient-primary {
+            background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);
+        }
+
+        .prediction-card {
+            border-radius: 0.5rem;
+            box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .prediction-card:hover {
+            box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.15);
+        }
+
+        .form-control {
+            border-radius: 0.25rem;
+            border: 1px solid #ced4da;
+        }
+
+        .btn-primary {
+            background-color: #4e73df;
+            border-color: #4e73df;
+            border-radius: 0.25rem;
+        }
+
+        .btn-primary:hover {
+            background-color: #2e59d9;
+            border-color: #2653d4;
+        }
+
+        .result-display {
+            background-color: #f8f9fa;
+            border-radius: 0.5rem;
+            min-height: 350px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .result-value {
+            font-size: 2.5rem;
+            color: #4e73df;
+            font-weight: bold;
+        }
+
+        .no-data {
+            font-size: 1.5rem;
+            color: #6c757d;
+        }
+    </style>
+
+    <div class="page-content">
+        <!-- 页面标题区域 -->
+        <div class="page-header bg-gradient-primary text-white py-3">
+            <div class="container-fluid">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h2 class="h4 mb-0">
+                        <i class="fas fa-fire mr-2"></i>点赞热度预测
+                    </h2>
+                    <small class="text-white-50">基于机器学习模型的预测分析</small>
+                </div>
+            </div>
+        </div>
+        <section class="py-4">
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="card prediction-card mb-4">
+                            <div class="card-header bg-white">
+                                <h5 class="card-title mb-0 text-primary">
+                                    <i class="fas fa-sliders-h mr-2"></i>预测条件设置
+                                </h5>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <form class="form-horizontal" action="/home/predict/" method="POST">
+                                <div class="form-row align-items-center">
+                                    <div class="col-md-3 mb-3">
+                                        <label class="form-label">视频时长</label>
+                                        <input type="number" name="duration" class="form-control" required>
+                                    </div>
+                                    <div class="col-md-3 mb-3">
+                                        <label class="form-label">收藏数量</label>
+                                        <input type="number" name="collect" class="form-control" required>
+                                    </div>
+                                    <div class="col-md-3 mb-3">
+                                        <label class="form-label">评论数量</label>
+                                        <input type="number" name="comment" class="form-control" required>
+                                    </div>
+                                    <div class="col-md-3 mb-3">
+                                        <label class="form-label">分享数量</label>
+                                        <input type="number" name="share" class="form-control" required>
+                                    </div>
+                                </div>
+                                <div class="form-row align-items-center">
+                                    <div class="col-md-3 mb-3">
+                                        <label class="form-label">粉丝数量</label>
+                                        <input type="number" name="fans" class="form-control" required>
+                                    </div>
+                                    <div class="col-md-3 mb-3">
+                                        <label class="form-label">互动率</label>
+                                        <input type="number" name="interaction_rate" class="form-control" step="0.01"
+                                               required>
+                                    </div>
+                                    <div class="col-md-3 mb-3">
+                                        <label class="form-label">发布时间(0-23)</label>
+                                        <input type="number" name="hour" class="form-control" min="0" max="23"
+                                               required>
+                                    </div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="col-md-12 mb-3 d-flex justify-content-center">
+                                        <button type="submit" class="btn btn-primary btn-lg">
+                                            <i class="fas fa-calculator mr-2"></i>预测
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="pb-4">
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="card prediction-card">
+                            <div class="card-header bg-white">
+                                <h5 class="card-title mb-0 text-primary">
+                                    <i class="fas fa-chart-line mr-2"></i>预测结果
+                                </h5>
+                            </div>
+                            <div class="card-body p-0">
+                                <div class="result-display">
+                                    {% if showResult %}
+                                        {% if preResult %}
+                                            <div class="text-center">
+                                                <p class="mb-2">预测点赞数量为</p>
+                                                <h2 class="result-value">{{ preResult }}</h2>
+
+                                                <div class="input-summary mt-4">
+                                                    <h5 class="mb-3">输入参数详情</h5>
+                                                    <div class="row">
+                                                        <div class="col-md-6">
+                                                            <p><strong>视频时长:</strong> {{ inputData.duration }}秒</p>
+                                                            <p><strong>收藏数量:</strong> {{ inputData.collect }}</p>
+                                                            <p><strong>评论数量:</strong> {{ inputData.comment }}</p>
+                                                            <p><strong>分享数量:</strong> {{ inputData.share }}</p>
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <p><strong>粉丝数量:</strong> {{ inputData.fans }}</p>
+                                                            <p><strong>互动率:</strong> {{ inputData.interaction_rate }}
+                                                            </p>
+                                                            <p><strong>发布时间:</strong> {{ inputData.hour }}:00</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        {% else %}
+                                            <div class="text-center">
+                                                <i class="fas fa-exclamation-triangle fa-3x mb-3 text-warning"></i>
+                                                <h4 class="no-data">未能获取预测结果</h4>
+                                            </div>
+                                        {% endif %}
+                                    {% else %}
+                                        <div class="text-center">
+                                            <i class="fas fa-info-circle fa-3x mb-3 text-secondary"></i>
+                                            <h4 class="no-data">请填写条件进行预测</h4>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+{% endblock %}

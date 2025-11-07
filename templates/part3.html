@@ -1,0 +1,311 @@
+{% extends 'base.html' %}
+{% block content %}
+    {% load static %}
+    <div class="page-content">
+        <h1 class="page-title">
+            <i class="fa fa-home"></i>
+            评论分析
+        </h1>
+        <section class="no-padding-bottom">
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="block"
+                             style="background: #f8f9fc; border-radius: 10px; box-shadow: 0 4px 20px rgba(0,0,0,0.05);">
+                            <div class="title">
+                                <strong class="d-block" style="color: #4e73df; font-size: 1.2rem;">评论与分享趋势分析</strong>
+                                <span class="d-block text-muted small">评论与分享</span>
+                            </div>
+                            <div class="block-body p-0">
+                                <div id="main1" style="width: 100%;height: 600px; border-radius: 8px;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-12">
+                        <div class="block"
+                             style="background: #f8f9fc; border-radius: 10px; box-shadow: 0 4px 20px rgba(0,0,0,0.05);">
+                            <div class="title">
+                                <strong class="d-block" style="color: #4e73df; font-size: 1.2rem;">用户评论词云</strong>
+                                <span class="d-block text-muted small">用户评论</span>
+                            </div>
+                            <div class="block-body p-0">
+                                <div id="main2" style="width: 100%;height: 600px; border-radius: 8px;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+    <script src="{% static 'js/echarts.js' %}"></script>
+    <script src="{% static 'js/echarts-wordcloud.min.js' %}"></script>
+    <script src="{% static 'js/china.js' %}"></script>
+    <script>
+        // 评论与分享对比折线图
+        var chartDomA = document.getElementById('main1');
+        var myChartA = echarts.init(chartDomA);
+        var optionA;
+
+        optionA = {
+            color: ['#4e73df', '#1cc88a'],
+            title: {
+                text: '评论与分享趋势对比',
+                left: 'center',
+                textStyle: {
+                    color: '#4e73df',
+                    fontSize: 16,
+                    fontWeight: 'bold'
+                }
+            },
+            tooltip: {
+                trigger: 'axis',
+                axisPointer: {
+                    type: 'cross',
+                    label: {
+                        backgroundColor: '#6a7985'
+                    }
+                },
+                formatter: function (params) {
+                    return params[0].axisValue + '<br/>' +
+                        params[0].marker + params[0].seriesName + ': ' + params[0].value + '<br/>' +
+                        params[1].marker + params[1].seriesName + ': ' + params[1].value;
+                }
+            },
+            legend: {
+                data: ['评论', '分享'],
+                textStyle: {
+                    color: '#5a5c69'
+                },
+                right: 20,
+                top: 20
+            },
+            grid: {
+                left: '3%',
+                right: '4%',
+                bottom: '3%',
+                containLabel: true
+            },
+            xAxis: {
+                type: 'category',
+                boundaryGap: false,
+                data: {{ name_list | safe }},
+                axisLine: {
+                    lineStyle: {
+                        color: '#e3e6f0'
+                    }
+                },
+                axisLabel: {
+                    color: '#5a5c69'
+                }
+            },
+            yAxis: {
+                type: 'value',
+                name: '数量',
+                axisLine: {
+                    lineStyle: {
+                        color: '#e3e6f0'
+                    }
+                },
+                axisLabel: {
+                    color: '#5a5c69'
+                },
+                splitLine: {
+                    lineStyle: {
+                        color: '#f0f2f5'
+                    }
+                }
+            },
+            series: [
+                {
+                    name: '评论',
+                    type: 'line',
+                    smooth: true,
+                    lineStyle: {
+                        width: 3
+                    },
+                    showSymbol: true,
+                    symbolSize: 8,
+                    areaStyle: {
+                        opacity: 0.1,
+                        color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                            {offset: 0, color: '#4e73df'},
+                            {offset: 1, color: '#4e73df'}
+                        ])
+                    },
+                    emphasis: {
+                        focus: 'series'
+                    },
+                    data: {{ value_list1 }}
+                },
+                {
+                    name: '分享',
+                    type: 'line',
+                    smooth: true,
+                    lineStyle: {
+                        width: 3
+                    },
+                    showSymbol: true,
+                    symbolSize: 8,
+                    areaStyle: {
+                        opacity: 0.1,
+                        color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                            {offset: 0, color: '#1cc88a'},
+                            {offset: 1, color: '#1cc88a'}
+                        ])
+                    },
+                    emphasis: {
+                        focus: 'series'
+                    },
+                    data: {{ value_list2 }}
+                }
+            ]
+        };
+
+        optionA && myChartA.setOption(optionA);
+
+    </script>
+    <script>
+        // 初始化 ECharts 实例
+        var myChart = echarts.init(document.getElementById('main2'));
+
+        // 美化后的词云配置
+        myChart.setOption({
+            title: {
+                text: '用户评论热词分析',
+                subtext: '词频可视化 - 关键词热度分布',
+                left: 'center',
+                top: 20,
+                textStyle: {
+                    fontSize: 26,
+                    fontWeight: 'bold',
+                    color: '#2c3e50',
+                    fontFamily: '"Helvetica Neue", Arial, sans-serif',
+                    textShadow: '1px 1px 3px rgba(0,0,0,0.1)'
+                },
+                subtextStyle: {
+                    fontSize: 16,
+                    color: '#7f8c8d',
+                    fontStyle: 'italic'
+                }
+            },
+            tooltip: {
+                show: true,
+                trigger: 'item',
+                backgroundColor: 'rgba(0,0,0,0.85)',
+                borderColor: '#3498db',
+                borderWidth: 2,
+                padding: [12, 20],
+                textStyle: {
+                    color: '#ecf0f1',
+                    fontSize: 14,
+                    lineHeight: 24
+                },
+                formatter: function (params) {
+                    return `<div style="font-weight:bold;font-size:16px;margin-bottom:5px;color:#3498db">${params.name}</div>
+                        <div style="display:flex;align-items:center;">
+                            <span style="display:inline-block;width:10px;height:10px;background:${params.color};margin-right:8px;"></span>
+                            出现频次: <span style="color:#f1c40f;font-weight:bold;margin-left:5px;">${params.value}</span>
+                        </div>`;
+                }
+            },
+            backgroundColor: '#f9f9f9',
+            series: [{
+                type: 'wordCloud',
+                shape: 'pentagon',
+                left: 'center',
+                top: 'middle',
+                width: '95%',
+                height: '90%',
+                right: null,
+                bottom: null,
+                sizeRange: [20, 100],
+                rotationRange: [-30, 30],
+                rotationStep: 15,
+                gridSize: 10,
+                drawOutOfBound: false,
+                layoutAnimation: {
+                    duration: 1500,
+                    easing: 'cubicOut'
+                },
+                textStyle: {
+                    fontFamily: '"Microsoft YaHei", "PingFang SC", "Hiragino Sans GB", sans-serif',
+                    fontWeight: 'bold',
+                    color: function () {
+                        // 更丰富的颜色方案
+                        const colorPalettes = [
+                            ['#3498db', '#2980b9', '#1abc9c', '#16a085'], // 蓝色/青色系
+                            ['#e74c3c', '#c0392b', '#f39c12', '#d35400'], // 红色/橙色系
+                            ['#9b59b6', '#8e44ad', '#34495e', '#2c3e50'], // 紫色/深蓝系
+                            ['#27ae60', '#2ecc71', '#f1c40f', '#e67e22']  // 绿色/黄色系
+                        ];
+
+                        const palette = colorPalettes[Math.floor(Math.random() * colorPalettes.length)];
+                        return palette[Math.floor(Math.random() * palette.length)];
+                    },
+                    emphasis: {
+                        shadowBlur: 20,
+                        shadowColor: 'rgba(0,0,0,0.3)',
+                        textShadowBlur: 8,
+                        textShadowColor: '#fff',
+                        borderColor: '#3498db',
+                        borderWidth: 2,
+                        backgroundColor: 'rgba(255,255,255,0.3)'
+                    }
+                },
+                emphasis: {
+                    focus: 'self',
+                    textStyle: {
+                        color: '#e74c3c',
+                        textShadowBlur: 12,
+                        textShadowColor: 'rgba(0,0,0,0.3)'
+                    }
+                },
+                data: {{ word_counts_list|safe }}
+            }],
+            visualMap: {
+                show: false, // 完全隐藏视觉映射组件
+                type: 'continuous',
+                min: Math.min(...{{ word_counts_list|safe }}.map(item => item.value)),
+            max
+        :
+        Math.max(...{{ word_counts_list|safe }}.map(item => item.value)
+        ),
+        inRange: {
+            color: ['#a8d8ea', '#aa96da', '#fcbad3', '#ffffd2']
+        }
+        },
+        animationDuration: 2000,
+            animationEasing
+        :
+        'elasticOut'
+        })
+        ;
+
+        // 响应式调整
+        window.addEventListener('resize', function () {
+            myChart.resize();
+        });
+
+        // 添加交互效果
+        setTimeout(() => {
+            myChart.dispatchAction({
+                type: 'highlight',
+                seriesIndex: 0,
+                dataIndex: Math.floor(Math.random() *{{ word_counts_list|safe }}.length)
+        })
+            ;
+
+            // 添加旋转动画
+            setInterval(() => {
+                const dataLen =
+                {{ word_counts_list|safe }}.
+                length;
+                myChart.dispatchAction({
+                    type: 'highlight',
+                    seriesIndex: 0,
+                    dataIndex: Math.floor(Math.random() * dataLen)
+                });
+            }, 3000);
+        }, 1500);
+    </script>
+{% endblock %}
